@@ -1,10 +1,10 @@
-## Welcome to GitHub Pages
+## Welcome to Duran Bao's GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/SpadeKKK/SpadeKKK.github.io/edit/main/index.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+### Too many fun journeys since the AI developed, let's start/explore more during the trips.
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
