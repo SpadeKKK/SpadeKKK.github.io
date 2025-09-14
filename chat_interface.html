@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Test Chat Assistant</title>
+    <style>
+        /* Chat Widget Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .chat-widget.minimized {
+            height: 70px;
+            width: 320px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-status {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .minimize-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .minimize-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-widget.minimized .chat-messages,
+        .chat-widget.minimized .chat-input-container,
+        .chat-widget.minimized .suggestions-container {
+            display: none;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            align-self: flex-start;
+            position: relative;
+        }
+
+        .message.assistant::before {
+            content: '🤖';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e1e5e9;
+            align-self: flex-start;
+            margin-left: 30px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .suggestions-container {
+            padding: 0 20px 15px;
+            background: #f8f9fa;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            background: white;
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 14px;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1.2em;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .analysis-ready {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .launch-test-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .launch-test-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            .chat-widget {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 40px);
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                border-radius: 15px;
+            }
+
+            .chat-widget.minimized {
+                height: 60px;
+                width: calc(100vw - 40px);
+            }
+        }
+
+        /* Integration with main app */
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .chat-toggle-btn.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle-btn" id="chatToggle">💬</button>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget minimized" id="chatWidget">
+        <div class="chat-header" onclick="toggleChat()">
+            <h3>
+                <span class="chat-status"></span>
+                AI Assistant
+            </h3>
+            <button class="minimize-btn" onclick="toggleChat()" id="minimizeBtn">−</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+
+        <div class="suggestions-container" id="suggestionsContainer">
+            <div class="suggestions" id="suggestions">
+                <!-- Suggestion chips will be added here -->
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Ask me about A/B testing..."
+                    rows="1"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ABTestChatAssistant {
+            constructor() {
+                this.isMinimized = true;
+                this.isTyping = false;
+                this.conversationHistory = [];
+                this.currentState = 'greeting';
+                this.collectedParams = {};
+                
+                this.initializeChat();
+                this.bindEvents();
+            }
+
+            initializeChat() {
+                // Show initial greeting when first opened
+                this.addMessage('assistant', 
+                    "👋 Hi! I'm your A/B Test Designer assistant. I'll help you set up and analyze your experiments!\n\n" +
+                    "What would you like to do today?"
+                );
+                
+                this.showSuggestions([
+                    'Design new A/B test',
+                    'Analyze test results',
+                    'Get sample size help',
+                    'Test ideas'
+                ]);
+            }
+
+            bindEvents() {
+                const chatInput = document.getElementById('chatInput');
+                const sendBtn = document.getElementById('sendBtn');
+                const chatToggle = document.getElementById('chatToggle');
+
+                // Enter key to send message
+                chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Auto-resize textarea
+                chatInput.addEventListener('input', () => {
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = chatInput.scrollHeight + 'px';
+                });
+
+                // Chat toggle
+                chatToggle.addEventListener('click', () => {
+                    this.openChat();
+                });
+            }
+
+            toggleChat() {
+                const widget = document.getElementById('chatWidget');
+                const toggleBtn = document.getElementById('chatToggle');
+                const minimizeBtn = document.getElementById('minimizeBtn');
+
+                this.isMinimized = !this.isMinimized;
+                
+                if (this.isMinimized) {
+                    widget.classList.add('minimized');
+                    toggleBtn.classList.remove('hidden');
+                    minimizeBtn.textContent = '+';
+                } else {
+                    widget.classList.remove('minimized');
+                    toggleBtn.classList.add('hidden');
+                    minimizeBtn.textContent = '−';
+                    this.scrollToBottom();
+                    document.getElementById('chatInput').focus();
+                }
+            }
+
+            openChat() {
+                if (this.isMinimized) {
+                    this.toggleChat();
+                }
+            }
+
+            sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message || this.isTyping) return;
+
+                // Add user message
+                this.addMessage('user', message);
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Process message
+                this.processMessage(message);
+            }
+
+            addMessage(sender, text, options = {}) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                // Format text with basic markdown support
+                const formattedText = this.formatMessage(text);
+                messageDiv.innerHTML = formattedText;
+
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+
+                // Add to conversation history
+                this.conversationHistory.push({
+                    sender,
+                    text,
+                    timestamp: new Date().toISOString(),
+                    ...options
+                });
+            }
+
+            formatMessage(text) {
+                // Basic markdown formatting
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/• /g, '• ');
+            }
+
+            showTyping() {
+                const messagesContainer = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typingIndicator';
+                typingDiv.innerHTML = `
+                    <span>AI is thinking</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(typingDiv);
+                this.scrollToBottom();
+                this.isTyping = true;
+            }
+
+            hideTyping() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+                this.isTyping = false;
+            }
+
+            showSuggestions(suggestions) {
+                const suggestionsContainer = document.getElementById('suggestions');
+                suggestionsContainer.innerHTML = '';
+
+                suggestions.forEach(suggestion => {
+                    const chip = document.createElement('div');
+                    chip.className = 'suggestion-chip';
+                    chip.textContent = suggestion;
+                    chip.onclick = () => {
+                        document.getElementById('chatInput').value = suggestion;
+                        this.sendMessage();
+                    };
+                    suggestionsContainer.appendChild(chip);
+                });
+
+                document.getElementById('suggestionsContainer').style.display = 
+                    suggestions.length > 0 ? 'block' : 'none';
+            }
+
+            processMessage(message) {
+                this.showTyping();
+
+                // Simulate processing delay for better UX
+                setTimeout(() => {
+                    this.hideTyping();
+                    
+                    const response = this.generateResponse(message);
+                    this.addMessage('assistant', response.message);
+                    
+                    if (response.suggestions) {
+                        this.showSuggestions(response.suggestions);
+                    } else {
+                        this.showSuggestions([]);
+                    }
+
+                    if (response.analysisReady) {
+                        this.showAnalysisReady(response.parameters);
+                    }
+                    
+                }, 1000 + Math.random() * 2000); // 1-3 second delay
+            }
+
+            generateResponse(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                // Simple pattern matching for demo purposes
+                // In production, this would call the backend chat_assistant.py
+                
+                if (this.currentState === 'greeting') {
+                    return this.handleGreeting(lowerMessage);
+                } else if (this.detectIntent(lowerMessage) === 'design') {
+                    return this.handleDesignRequest(lowerMessage);
+                } else if (this.detectIntent(lowerMessage) === 'analyze') {
+                    return this.handleAnalysisRequest(lowerMessage);
+                } else {
+                    return this.handleGeneralQuery(lowerMessage);
+                }
+            }
+
+            detectIntent(message) {
+                if (message.includes('design') || message.includes('create') || message.includes('new test')) {
+                    return 'design';
+                } else if (message.includes('analyze') || message.includes('results') || message.includes('significant')) {
+                    return 'analyze';
+                } else if (message.includes('help') || message.includes('how')) {
+                    return 'help';
+                }
+                return 'general';
+            }
+
+            handleGreeting(message) {
+                this.currentState = 'understanding_goal';
+                
+                if (message.includes('design') || message.includes('create')) {
+                    return {
+                        message: "Perfect! Let's design your A/B test. 🧪\n\nFirst, what would you like to test? Please describe your research question.\n\n**Examples:**\n• 'Does changing our pricing page layout increase conversions?'\n• 'Will personalized emails improve click rates?'\n• 'Does video content increase engagement time?'",
+                        suggestions: ['Button color test', 'Email subject test', 'Pricing page test', 'Landing page test']
+                    };
+                } else if (message.includes('analyze') || message.includes('results')) {
+                    return {
+                        message: "Excellent! I'll analyze your A/B test results. 📊\n\nPlease provide:\n1. **Control group**: How many visitors and conversions?\n2. **Treatment group**: How many visitors and conversions?\n3. **What were you testing?**\n\nExample: 'Control had 1000 visitors with 100 conversions, treatment had 1000 visitors with 120 conversions, testing button color'",
+                        suggestions: ['I have conversion data', 'I have click data', 'I have revenue data']
+                    };
+                } else {
+                    return {
+                        message: "I can help you with several things:\n\n📊 **Design a new A/B test experiment**\n📈 **Analyze existing A/B test results**\n🔍 **Get sample size recommendations**\n💡 **Brainstorm test ideas for your product**\n\nWhat would you like to do?",
+                        suggestions: ['Design A/B test', 'Analyze results', 'Sample size help', 'Test ideas']
+                    };
+                }
+            }
+
+            handleDesignRequest(message) {
+                // Extract parameters from message
+                const params = this.extractParameters(message);
+                Object.assign(this.collectedParams, params);
+                
+                const missing = this.getMissingParameters();
+                
+                if (missing.length === 0) {
+                    return this.generateTestDesign();
+                } else {
+                    return this.askForParameter(missing[0]);
+                }
+            }
+
+            handleAnalysisRequest(message) {
+                // Try to extract analysis data
+                const analysisData = this.extractAnalysisData(message);
+                
+                if (analysisData.complete) {
+                    return this.performAnalysis(analysisData);
+                } else {
+                    return {
+                        message: "I need more information to analyze your results. Please provide:\n\n🔢 **Control group**: Visitors and conversions\n🔢 **Treatment group**: Visitors and conversions\n\nExample: 'Control: 1000 visitors, 100 conversions. Treatment: 1000 visitors, 120 conversions'",
+                        suggestions: ['Control: 1000, 100', 'Treatment: 1000, 120', 'Let me format differently']
+                    };
+                }
+            }
+
+            handleGeneralQuery(message) {
+                if (message.includes('help') || message.includes('how')) {
+                    return {
+                        message: "I'm here to help! 🤝\n\nI can assist you with:\n• **Designing A/B tests** - I'll guide you through the setup\n• **Analyzing results** - Statistical significance testing\n• **Sample size calculation** - How many users you need\n• **Best practices** - Tips for successful testing\n\nWhat would you like to know more about?",
+                        suggestions: ['Design help', 'Analysis help', 'Sample size help', 'Best practices']
+                    };
+                } else {
+                    return {
+                        message: "I'm not sure I understand that completely. Could you rephrase or choose one of these options?",
+                        suggestions: ['Design new A/B test', 'Analyze test results', 'Get help', 'Start over']
+                    };
+                }
+            }
+
+            extractParameters(message) {
+                const params = {};
+                
+                // Extract numbers (potential effect sizes, rates, etc.)
+                const numbers = message.match(/(\d+(?:\.\d+)?)\s*%?/g);
+                if (numbers) {
+                    if (message.includes('effect') || message.includes('improve') || message.includes('increase')) {
+                        params.effectSize = parseFloat(numbers[0]);
+                    } else if (message.includes('baseline') || message.includes('current')) {
+                        params.baselineRate = parseFloat(numbers[0]);
+                    }
+                }
+                
+                // Extract time periods
+                if (message.includes('week')) params.timePeriod = 'week';
+                else if (message.includes('month')) params.timePeriod = 'month';
+                else if (message.includes('quarter')) params.timePeriod = 'quarter';
+                
+                // Extract test type
+                if (message.includes('conversion') || message.includes('purchase') || message.includes('signup')) {
+                    params.testType = 'conversion-rate';
+                } else if (message.includes('click') || message.includes('ctr') || message.includes('button')) {
+                    params.testType = 'click-through-rate';
+                } else if (message.includes('revenue') || message.includes('money') || message.includes('sales')) {
+                    params.testType = 'revenue';
+                }
+                
+                return params;
+            }
+
+            extractAnalysisData(message) {
+                // Try to extract control and treatment data
+                const controlMatch = message.match(/control.*?(\d+).*?(\d+)/i);
+                const treatmentMatch = message.match(/treatment.*?(\d+).*?(\d+)/i);
+                
+                if (controlMatch && treatmentMatch) {
+                    return {
+                        complete: true,
+                        controlVisitors: parseInt(controlMatch[1]),
+                        controlConversions: parseInt(controlMatch[2]),
+                        treatmentVisitors: parseInt(treatmentMatch[1]),
+                        treatmentConversions: parseInt(treatmentMatch[2])
+                    };
+                }
+                
+                return { complete: false };
+            }
+
+            getMissingParameters() {
+                const required = [];
+                if (!this.collectedParams.testType) required.push('testType');
+                if (!this.collectedParams.effectSize) required.push('effectSize');
+                if (!this.collectedParams.baselineRate) required.push('baselineRate');
+                if (!this.collectedParams.timePeriod) required.push('timePeriod');
+                return required;
+            }
+
+            askForParameter(param) {
+                switch (param) {
+                    case 'testType':
+                        return {
+                            message: "What would you like to test? Please describe your research question.\n\n💡 **Examples**:\n• 'Does a red call-to-action button increase conversions compared to blue?'\n• 'Will personalized email subject lines improve open rates?'\n• 'Does showing customer reviews increase purchase rates?'",
+                            suggestions: ['Button color test', 'Email optimization', 'Product page test', 'Pricing test']
+                        };
+                    case 'effectSize':
+                        return {
+                            message: "How much improvement do you expect to see?\n\n• **5-10%** - Small but meaningful improvement\n• **10-20%** - Moderate improvement (common goal)\n• **20%+** - Large improvement (ambitious but possible)\n\nWhat improvement do you expect?",
+                            suggestions: ['5% improvement', '10% improvement', '15% improvement', '20% improvement']
+                        };
+                    case 'baselineRate':
+                        return {
+                            message: "What's your current baseline rate?\n\n🎯 **For example**:\n• Current conversion rate: 3%\n• Current click-through rate: 2%\n• Current signup rate: 8%\n\nThis helps me calculate the right sample size.",
+                            suggestions: ['2%', '5%', '10%', '15%']
+                        };
+                    case 'timePeriod':
+                        return {
+                            message: "How long would you like to run this test?\n\n⏰ **Common options**:\n• **1 week** - Quick test for high-traffic sites\n• **1 month** - Standard duration for most tests\n• **1 quarter** - Long-term impact measurement",
+                            suggestions: ['1 week', '2 weeks', '1 month', '3 months']
+                        };
+                    default:
+                        return {
+                            message: "I need a bit more information. Could you provide more details about your test?",
+                            suggestions: ['Tell me more', 'Start over', 'Get help']
+                        };
+                }
+            }
+
+            generateTestDesign() {
+                const { effectSize = 15, baselineRate = 10, timePeriod = 'month' } = this.collectedParams;
+                
+                // Simple sample size calculation
+                const sampleSize = Math.max(100, Math.ceil(1600 / (effectSize / 100) ** 2));
+                const duration = timePeriod === 'week' ? 7 : timePeriod === 'month' ? 30 : 90;
+                
+                return {
+                    message: `🎯 **Your A/B Test Design**:\n\n**Sample Size**: ${sampleSize.toLocaleString()} users per group (${(sampleSize * 2).toLocaleString()} total)\n**Test Duration**: ${duration} days\n**Expected Effect**: ${effectSize}% improvement\n**Baseline Rate**: ${baselineRate}%\n\n**Statistical Parameters**:\n• Confidence Level: 95%\n• Statistical Power: 80%\n\nReady to launch your test? 🚀`,
+                    suggestions: ['Launch in main app', 'Modify parameters', 'Start new test'],
+                    analysisReady: true,
+                    parameters: this.collectedParams
+                };
+            }
+
+            performAnalysis(data) {
+                const { controlVisitors, controlConversions, treatmentVisitors, treatmentConversions } = data;
+                
+                // Simple statistical calculation
+                const controlRate = controlConversions / controlVisitors;
+                const treatmentRate = treatmentConversions / treatmentVisitors;
+                const improvement = ((treatmentRate - controlRate) / controlRate) * 100;
+                
+                // Simplified significance test
+                const pooledRate = (controlConversions + treatmentConversions) / (controlVisitors + treatmentVisitors);
+                const se = Math.sqrt(pooledRate * (1 - pooledRate) * (1/controlVisitors + 1/treatmentVisitors));
+                const zScore = (treatmentRate - controlRate) / se;
+                const pValue = 2 * (1 - this.normalCDF(Math.abs(zScore)));
+                
+                const isSignificant = pValue < 0.05;
+                const significance = isSignificant ? "✅ SIGNIFICANT" : "❌ NOT SIGNIFICANT";
+                
+                return {
+                    message: `📊 **Analysis Results**\n\n**Control Group**: ${controlConversions.toLocaleString()} conversions out of ${controlVisitors.toLocaleString()} visitors (${(controlRate * 100).toFixed(2)}%)\n**Treatment Group**: ${treatmentConversions.toLocaleString()} conversions out of ${treatmentVisitors.toLocaleString()} visitors (${(treatmentRate * 100).toFixed(2)}%)\n\n**Improvement**: ${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%\n**P-value**: ${pValue.toFixed(4)}\n**Statistical Significance**: ${significance}\n\n${isSignificant ? '🎉 **Recommendation**: Implement the treatment!' : '⏳ **Recommendation**: Continue testing or collect more data.'}`,
+                    suggestions: ['Run another test', 'Design new experiment', 'Get detailed analysis']
+                };
+            }
+
+            normalCDF(z) {
+                return 0.5 * (1 + this.erf(z / Math.sqrt(2)));
+            }
+
+            erf(x) {
+                // Approximation of error function
+                const a1 =  0.254829592;
+                const a2 = -0.284496736;
+                const a3 =  1.421413741;
+                const a4 = -1.453152027;
+                const a5 =  1.061405429;
+                const p  =  0.3275911;
+                
+                const sign = x >= 0 ? 1 : -1;
+                x = Math.abs(x);
+                
+                const t = 1.0 / (1.0 + p * x);
+                const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+                
+                return sign * y;
+            }
+
+            showAnalysisReady(parameters) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const readyDiv = document.createElement('div');
+                readyDiv.className = 'analysis-ready';
+                readyDiv.innerHTML = `
+                    🎯 Your test parameters are ready!
+                    <button class="launch-test-btn" onclick="launchMainInterface()">
+                        🚀 Launch A/B Test Designer
+                    </button>
+                `;
+                messagesContainer.appendChild(readyDiv);
+                this.scrollToBottom();
+            }
+
+            scrollToBottom() {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            exportParameters() {
+                return {
+                    question: `Testing ${this.collectedParams.testType || 'conversion rate'} improvement`,
+                    hypothesis: `Treatment will improve ${this.collectedParams.testType || 'conversion rate'} by ${this.collectedParams.effectSize || 15}%`,
+                    metric: this.collectedParams.testType || 'conversion-rate',
+                    effect_size: this.collectedParams.effectSize || 15,
+                    baseline_rate: this.collectedParams.baselineRate || 10
+                };
+            }
+        }
+
+        // Global functions
+        function toggleChat() {
+            window.chatAssistant.toggleChat();
+        }
+
+        function launchMainInterface() {
+            // Get the collected parameters
+            const params = window.chatAssistant.exportParameters();
+            
+            // Fill the main form if it exists (integration with main app)
+            if (typeof fillFormWithChatData === 'function') {
+                fillFormWithChatData(params);
+            } else {
+                // Show parameters in console for now
+                console.log('Chat parameters ready for main app:', params);
+                alert('Parameters ready! Check console for details.');
+            }
+            
+            // Minimize chat
+            window.chatAssistant.toggleChat();
+        }
+
+        // Initialize chat assistant when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            window.chatAssistant = new ABTestChatAssistant();
+        });
+    </script>
+</body>
+</html>

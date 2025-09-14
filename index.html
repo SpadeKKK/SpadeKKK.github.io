@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Test Designer Robot - With AI Chat Assistant</title>
+    <meta name="description" content="Intelligent A/B testing platform with AI chat assistant for experiment design and statistical analysis">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    
+    <!-- External CDN Resources -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <style>
+        /* Main App Styles - Keep all your existing styles from the original index.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Chat Assistant Integration Notice */
+        .chat-notice {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 30px;
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-notice::before {
+            content: '💬';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        /* Keep all your existing styles for main-content, input-section, etc. */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        /* Chat Helper Button in Main Form */
+        .chat-helper-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .chat-helper-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Chat Widget Integration Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .chat-widget.minimized {
+            height: 70px;
+            width: 320px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-status {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .minimize-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .minimize-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-widget.minimized .chat-messages,
+        .chat-widget.minimized .chat-input-container,
+        .chat-widget.minimized .suggestions-container {
+            display: none;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            align-self: flex-start;
+            position: relative;
+        }
+
+        .message.assistant::before {
+            content: '🤖';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .suggestions-container {
+            padding: 0 20px 15px;
+            background: #f8f9fa;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            background: white;
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 14px;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1.2em;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .chat-toggle-btn.hidden {
+            display: none;
+        }
+
+        .analysis-ready {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .launch-test-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .launch-test-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Add the rest of your existing styles for modules, tables, charts, etc. */
+        /* (Keep all the styles from your original index.html) */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 A/B Test Designer Robot</h1>
+            <p>Intelligent Statistical Analysis & Experiment Design Platform</p>
+        </div>
+        
+        <!-- Chat Integration Notice -->
+        <div class="chat-notice">
+            New! Ask our AI assistant for help designing your A/B tests
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📝 Question Input</h2>
+                <form id="abTestForm">
+                    <div class="form-group">
+                        <label for="research-question">Research Question *</label>
+                        <textarea id="research-question" placeholder="e.g., Does changing button color from blue to red increase click-through rates?" required></textarea>
+                        <button type="button" class="chat-helper-btn" onclick="openChatForHelp('question')">
+                            💬 Get AI help with research questions
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="metric">Primary Metric *</label>
+                        <select id="metric" required>
+                            <option value="">Select primary metric</option>
+                            <option value="click-through-rate">Click-through Rate</option>
+                            <option value="conversion-rate">Conversion Rate</option>
+                            <option value="engagement-time">Engagement Time</option>
+                            <option value="revenue">Revenue per User</option>
+                            <option value="retention">User Retention</option>
+                            <option value="bounce-rate">Bounce Rate</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hypothesis">Hypothesis *</label>
+                        <textarea id="hypothesis" placeholder="e.g., Red buttons will increase CTR by 15% compared to blue buttons" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expected-effect">Expected Effect Size (%) *</label>
+                        <input type="number" id="expected-effect" placeholder="e.g., 15" min="1" max="100" required>
+                        <button type="button" class="chat-helper-btn" onclick="openChatForHelp('effect-size')">
+                            💬 Help me estimate effect size
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="baseline-rate">Baseline Rate (%)</label>
+                        <input type="number" id="baseline-rate" placeholder="e.g., 10" min="0.1" max="100" step="0.1" value="10">
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="designBtn">
+                        🚀 Design Experiment
+                    </button>
+                    
+                    <button type="button" class="chat-helper-btn" onclick="openChatForFullDesign()" style="margin-top: 15px;">
+                        💬 Design with AI Assistant
+                    </button>
+                </form>
+            </div>
+
+            <!-- Keep all your existing output sections here -->
+            <div class="output-section">
+                <!-- Your existing modules for workflow, data template, decision output -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle-btn" id="chatToggle" onclick="toggleChat()">💬</button>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget minimized" id="chatWidget">
+        <div class="chat-header" onclick="toggleChat()">
+            <h3>
+                <span class="chat-status"></span>
+                AI Assistant
+            </h3>
+            <button class="minimize-btn" onclick="toggleChat()" id="minimizeBtn">+</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+
+        <div class="suggestions-container" id="suggestionsContainer">
+            <div class="suggestions" id="suggestions">
+                <!-- Suggestion chips will be added here -->
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Ask me about A/B testing..."
+                    rows="1"
+                    onkeydown="handleChatKeyPress(event)"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat Integration Class
+        class ChatIntegration {
+            constructor() {
+                this.sessionId = null;
+                this.isMinimized = true;
+                this.isInitialized = false;
+                this.initializeChat();
+            }
+            
+            async initializeChat() {
+                try {
+                    const response = await fetch('/api/chat/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.sessionId = data.session_id;
+                        this.isInitialized = true;
+                        this.showInitialMessage();
+                    }
+                } catch (error) {
+                    console.error('Chat initialization error:', error);
+                    this.showOfflineMessage();
+                }
+            }
+            
+            showInitialMessage() {
+                this.addMessage('assistant', 
+                    "👋 Hi! I'm your A/B Test Designer assistant. I can help you:\n\n" +
+                    "• Design new A/B test experiments\n" +
+                    "• Analyze test results\n" +
+                    "• Calculate sample sizes\n" +
+                    "• Brainstorm test ideas\n\n" +
+                    "What would you like to do?"
+                );
+                
+                this.showSuggestions([
+                    'Design new A/B test',
+                    'Analyze test results',
+                    'Get sample size help',
+                    'Test ideas'
+                ]);
+            }
+            
+            showOfflineMessage() {
+                this.addMessage('assistant', 
+                    "💡 AI Assistant is currently offline, but I can still help you with:\n\n" +
+                    "• Pre-filled form templates\n" +
+                    "• Quick setup guides\n" +
+                    "• Statistical best practices\n\n" +
+                    "Click the buttons in the form for guided help!"
+                );
+            }
+            
+            toggleChat() {
+                const widget = document.getElementById('chatWidget');
+                const toggleBtn = document.getElementById('chatToggle');
+                const minimizeBtn = document.getElementById('minimizeBtn');
+
+                this.isMinimized = !this.isMinimized;
+                
+                if (this.isMinimized) {
+                    widget.classList.add('minimized');
+                    toggleBtn.classList.remove('hidden');
+                    minimizeBtn.textContent = '+';
+                } else {
+                    widget.classList.remove('minimized');
+                    toggleBtn.classList.add('hidden');
+                    minimizeBtn.textContent = '−';
+                    this.scrollToBottom();
+                    document.getElementById('chatInput').focus();
+                }
+            }
+            
+            async sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+
+                this.addMessage('user', message);
+                input.value = '';
+                
+                if (!this.isInitialized) {
+                    this.addMessage('assistant', "I'm currently offline. Please try the guided help buttons in the main form!");
+                    return;
+                }
+
+                this.showTyping();
+
+                try {
+                    const response = await fetch(`/api/chat/${this.sessionId}/message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+
+                    const data = await response.json();
+                    this.hideTyping();
+                    
+                    if (data.success) {
+                        this.addMessage('assistant', data.message);
+                        this.showSuggestions(data.suggestions || []);
+                        
+                        if (data.analysis_ready && data.parameters) {
+                            this.showAnalysisReady(data.parameters);
+                        }
+                    } else {
+                        this.addMessage('assistant', `Sorry, I encountered an error: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('assistant', 'Connection error. Please try again or use the form helpers.');
+                }
+            }
+            
+            addMessage(sender, text) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                messageDiv.innerHTML = this.formatMessage(text);
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            formatMessage(text) {
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+            }
+            
+            showTyping() {
+                const messagesContainer = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.innerHTML = '<div style="padding:10px;color:#666;">🤖 Thinking...</div>';
+                messagesContainer.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+            
+            hideTyping() {
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) indicator.remove();
+            }
+            
+            showSuggestions(suggestions) {
+                const container = document.getElementById('suggestions');
+                container.innerHTML = '';
+                
+                suggestions.forEach(suggestion => {
+                    const chip = document.createElement('div');
+                    chip.className = 'suggestion-chip';
+                    chip.textContent = suggestion;
+                    chip.onclick = () => {
+                        document.getElementById('chatInput').value = suggestion;
+                        this.sendMessage();
+                    };
+                    container.appendChild(chip);
+                });
+            }
+            
+            showAnalysisReady(parameters) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const readyDiv = document.createElement('div');
+                readyDiv.className = 'analysis-ready';
+                readyDiv.innerHTML = `
+                    🎯 Your test parameters are ready!
+                    <button class="launch-test-btn" onclick="window.chatIntegration.fillMainForm()">
+                        🚀 Apply to Main Form
+                    </button>
+                `;
+                messagesContainer.appendChild(readyDiv);
+                this.scrollToBottom();
+                this.lastParameters = parameters;
+            }
+            
+            fillMainForm() {
+                if (!this.lastParameters) return;
+                
+                const params = this.lastParameters;
+                const form = document.getElementById('abTestForm');
+                
+                // Fill form fields
+                if (params.question) document.getElementById('research-question').value = params.question;
+                if (params.hypothesis) document.getElementById('hypothesis').value = params.hypothesis;
+                if (params.metric) document.getElementById('metric').value = params.metric;
+                if (params.effect_size) document.getElementById('expected-effect').value = params.effect_size;
+                if (params.baseline_rate) document.getElementById('baseline-rate').value = params.baseline_rate;
+                
+                // Show success notification
+                this.showNotification('✅ Form filled with AI recommendations!', 'success');
+                
+                // Minimize chat
+                if (!this.isMinimized) this.toggleChat();
+                
+                // Trigger form submission
+                setTimeout(() => {
+                    document.getElementById('designBtn').click();
+                }, 1000);
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.remove(), 3000);
+            }
+            
+            scrollToBottom() {
+                const container = document.getElementById('chatMessages');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        // Global chat functions
+        let chatIntegration;
+
+        function toggleChat() {
+            if (chatIntegration) {
+                chatIntegration.toggleChat();
+            }
+        }
+
+        function sendChatMessage() {
+            if (chatIntegration) {
+                chatIntegration.sendMessage();
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+
+        // Helper functions for form integration
+        function openChatForHelp(topic) {
+            if (!chatIntegration) return;
+            
+            if (chatIntegration.isMinimized) {
+                chatIntegration.toggleChat();
+            }
+            
+            const helpMessages = {
+                'question': 'Help me write a good research question for my A/B test',
+                'effect-size': 'How do I estimate the effect size for my A/B test?',
+                'baseline': 'What should I use as my baseline conversion rate?'
+            };
+            
+            const message = helpMessages[topic] || 'I need help with my A/B test setup';
+            document.getElementById('chatInput').value = message;
+            setTimeout(() => sendChatMessage(), 500);
+        }
+
+        function openChatForFullDesign() {
+            if (!chatIntegration) return;
+            
+            if (chatIntegration.isMinimized) {
+                chatIntegration.toggleChat();
+            }
+            
+            document.getElementById('chatInput').value = 'Help me design a complete A/B test from scratch';
+            setTimeout(() => sendChatMessage(), 500);
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chat
+            chatIntegration = new ChatIntegration();
+            
+            // Keep all your existing JavaScript for the main A/B test functionality
+            // (Include all the existing functions from your original index.html)
+            
+            console.log('A/B Test Designer with Chat Assistant loaded successfully!');
+        });
+
+        // Add your existing JavaScript functions here
+        // (populateTables, calculateSampleSize, etc. from the original index.html)
+    </script>
+</body>
+</html>
