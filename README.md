@@ -6,7 +6,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
 [![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](tests/)
 
-> **Intelligent Statistical Analysis & Experiment Design Platform**
+> **Developing a Platform for Intelligent Statistical Analysis & Experiment in Daily AB Testing Jobs.**
 
 A comprehensive A/B testing platform that automatically generates experiment workflows, provides statistical analysis, and delivers real-time decision-making insights. Built for data scientists, product managers, and growth teams who want to make data-driven decisions with confidence.
 
