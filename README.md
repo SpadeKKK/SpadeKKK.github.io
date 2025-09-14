@@ -1,4 +1,4 @@
-# 🤖 A/B Test Designer Robot
+# 🤖 Duran for A/B Test Prompt & Agent Designer Robot
 
 [![Deploy Status](https://img.shields.io/badge/deploy-success-brightgreen)](https://AB_demo.io)
 [![Python Version](https://img.shields.io/badge/python-3.9+-blue)](https://python.org)
