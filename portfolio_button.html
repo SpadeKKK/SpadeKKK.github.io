@@ -1,0 +1,426 @@
+<!-- 
+  Portfolio Integration for A/B Test Designer
+  Add this code to your spadekkk.github.io portfolio
+-->
+
+<!-- CSS Styles (Add to your portfolio's CSS file or <style> section) -->
+<style>
+/* A/B Test Designer Portfolio Integration */
+.ab-test-project {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 20px;
+    margin: 30px 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.ab-test-project:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
+}
+
+.ab-test-project::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.project-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.project-icon {
+    font-size: 3em;
+    margin-right: 20px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.project-title {
+    flex: 1;
+}
+
+.project-title h3 {
+    color: white;
+    margin: 0 0 5px 0;
+    font-size: 2em;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.project-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.project-description {
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    position: relative;
+    z-index: 2;
+}
+
+.project-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 2;
+}
+
+.feature-tag {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.9em;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.feature-tag:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.project-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-demo {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-demo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-demo:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-demo:hover::before {
+    left: 100%;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ab-test-project {
+        padding: 25px;
+        margin: 20px 0;
+    }
+    
+    .project-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .project-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .project-title h3 {
+        font-size: 1.6em;
+    }
+    
+    .project-actions {
+        flex-direction: column;
+    }
+    
+    .btn-demo, .btn-secondary {
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* Success animation */
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.success-animation {
+    animation: successPulse 0.6s ease-in-out;
+}
+</style>
+
+<!-- HTML Structure (Add to your portfolio's projects section) -->
+<div class="projects-section">
+    <!-- Your existing projects -->
+    
+    <!-- A/B Test Designer Project -->
+    <div class="ab-test-project" id="ab-test-project">
+        <div class="project-header">
+            <div class="project-icon">🤖</div>
+            <div class="project-title">
+                <h3>A/B Test Designer AI</h3>
+                <span class="project-badge">Featured Project</span>
+            </div>
+        </div>
+        
+        <p class="project-description">
+            Intelligent statistical analysis & experiment design platform. Automates A/B test workflows, 
+            provides real-time statistical significance testing, and generates actionable recommendations 
+            for data-driven decision making.
+        </p>
+        
+        <div class="project-features">
+            <span class="feature-tag">🔬 Experiment Design</span>
+            <span class="feature-tag">📊 Statistical Analysis</span>
+            <span class="feature-tag">📈 Real-time Results</span>
+            <span class="feature-tag">🤖 AI-Powered</span>
+            <span class="feature-tag">🚀 Production Ready</span>
+        </div>
+        
+        <div class="project-actions">
+            <button id="ab-demo-btn" class="btn-demo">
+                <span class="btn-text">🚀 AB_AI_demo</span>
+            </button>
+            <a href="https://github.com/spadekkk/ab-test-designer" target="_blank" class="btn-secondary">
+                <span>💻</span>
+                <span>View Code</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Functionality (Add to your portfolio's JS file or <script> section) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const demoBtn = document.getElementById('ab-demo-btn');
+    const project = document.getElementById('ab-test-project');
+    
+    // Your deployed app URL - UPDATE THIS!
+    const APP_URL = 'https://ab-test-designer.vercel.app'; // Change to your actual URL
+    
+    if (demoBtn) {
+        demoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const btnText = this.querySelector('.btn-text');
+            const originalText = btnText.textContent;
+            
+            // Add loading state
+            btnText.innerHTML = '<span class="loading-spinner"></span> Loading...';
+            this.disabled = true;
+            
+            // Add loading effect to project card
+            project.style.transform = 'scale(0.98)';
+            project.style.opacity = '0.8';
+            
+            // Simulate loading time and open app
+            setTimeout(() => {
+                // Open the A/B Test Designer app
+                window.open(APP_URL, '_blank');
+                
+                // Success animation
+                project.classList.add('success-animation');
+                project.style.transform = 'scale(1)';
+                project.style.opacity = '1';
+                
+                // Reset button after animation
+                setTimeout(() => {
+                    btnText.textContent = originalText;
+                    this.disabled = false;
+                    project.classList.remove('success-animation');
+                }, 600);
+                
+            }, 1500); // 1.5 second loading simulation
+        });
+        
+        // Add hover sound effect (optional)
+        demoBtn.addEventListener('mouseenter', function() {
+            // You can add a subtle sound effect here if desired
+            this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        demoBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+    
+    // Add intersection observer for scroll animations
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+        
+        if (project) {
+            // Initial state for animation
+            project.style.opacity = '0';
+            project.style.transform = 'translateY(30px)';
+            project.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            
+            observer.observe(project);
+        }
+    }
+    
+    // Analytics tracking (optional)
+    function trackEvent(action, label) {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', action, {
+                'event_category': 'AB_Test_Designer',
+                'event_label': label
+            });
+        }
+        
+        // Console log for debugging
+        console.log(`Analytics: ${action} - ${label}`);
+    }
+    
+    // Track demo button clicks
+    if (demoBtn) {
+        demoBtn.addEventListener('click', () => {
+            trackEvent('click', 'demo_button');
+        });
+    }
+    
+    // Track view source clicks
+    const viewCodeBtn = document.querySelector('.btn-secondary');
+    if (viewCodeBtn) {
+        viewCodeBtn.addEventListener('click', () => {
+            trackEvent('click', 'view_code');
+        });
+    }
+});
+
+// Function to update the app URL dynamically (call this after deployment)
+function updateAppURL(newURL) {
+    APP_URL = newURL;
+    console.log(`A/B Test Designer URL updated to: ${newURL}`);
+}
+
+// Export for potential use in other scripts
+window.ABTestDesigner = {
+    updateURL: updateAppURL,
+    openDemo: function() {
+        window.open(APP_URL, '_blank');
+    }
+};
+</script>
+
+<!-- 
+INTEGRATION INSTRUCTIONS:
+
+1. COPY THE CSS: Add the CSS styles to your portfolio's main stylesheet
+
+2. ADD THE HTML: Insert the HTML structure in your projects section
+
+3. INCLUDE THE JAVASCRIPT: Add the JavaScript to your portfolio's JS file
+
+4. UPDATE THE APP URL: Change APP_URL to your deployed application URL
+   Example: 'https://your-app.vercel.app' or 'https://AB_demo.io'
+
+5. CUSTOMIZE STYLING: Adjust colors, fonts, and spacing to match your portfolio
+
+6. TEST THE INTEGRATION: Ensure the button works and opens your A/B Test Designer
+
+OPTIONAL ENHANCEMENTS:
+- Add Google Analytics tracking
+- Include more detailed project metrics
+- Add testimonials or user feedback
+- Link to case studies or blog posts
+-->
