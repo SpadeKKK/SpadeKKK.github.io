@@ -378,32 +378,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **GitHub Issues**: [Report bugs or request features](https://github.com/spadekkk/ab-test-designer/issues)
 - **Stack Overflow**: Tag questions with `ab-test-designer`
 
-### Commercial Support
-- **Consulting**: Custom implementation and optimization
-- **Training**: Team workshops and best practices
-- **Enterprise**: On-premise deployment and custom features
-
-Contact: support@AB_demo.io
-
-## 🗺️ Roadmap
-
-### Q4 2024
-- [ ] **Multi-variate Testing**: Support for testing multiple variables
-- [ ] **Machine Learning**: Automated effect size prediction
-- [ ] **Integration APIs**: Slack, Teams, email notifications
-- [ ] **Advanced Visualizations**: Interactive charts and dashboards
-
-### Q1 2025
-- [ ] **Real-time Streaming**: Live data processing with Apache Kafka
-- [ ] **Mobile SDK**: Native iOS and Android libraries
-- [ ] **Advanced Statistics**: Survival analysis, time series
-- [ ] **White-label Solution**: Customizable branding options
-
-### Q2 2025
-- [ ] **AI Recommendations**: ML-powered test suggestions
-- [ ] **Compliance Features**: GDPR, CCPA data protection
-- [ ] **Enterprise SSO**: SAML, OAuth integration
-- [ ] **Advanced Reporting**: Automated insights and summaries
 
 ## 🤖 About the AI
 
