@@ -334,7 +334,7 @@ pytest tests/test_app.py::TestDataGenerator -v
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our contributing guidelines:
+We welcome contributions! Please contact me by comments.
 
 ### Development Setup
 ```bash
@@ -369,8 +369,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 ### Documentation
-- **API Docs**: [docs.AB_demo.io](https://docs.AB_demo.io)
-- **Tutorials**: [AB_demo.io/tutorials](https://AB_demo.io/tutorials)
+- **API Docs**: [SpadeKKK.github.io/chat_usage_guide.md](https://SpadeKKK.github.io/chat_usage_guide.md)
+- **Tutorials**: [SpadeKKK.github.io/chat_usage_guide.md](https://SpadeKKK.github.io/chat_usage_guide.md)
 - **Examples**: [github.com/spadekkk/ab-test-examples](https://github.com/spadekkk/ab-test-examples)
 
 ### Community
@@ -405,21 +405,6 @@ Contact: support@AB_demo.io
 - [ ] **Enterprise SSO**: SAML, OAuth integration
 - [ ] **Advanced Reporting**: Automated insights and summaries
 
-## 🏆 Awards & Recognition
-
-- **🥇 Best Developer Tool 2024** - Product Hunt
-- **⭐ 4.9/5 Stars** - 500+ GitHub stars
-- **🚀 Featured Project** - Awesome A/B Testing List
-- **📈 Top 1%** - Most active open source A/B testing tool
-
-## 📊 Statistics
-
-- **50,000+** experiments designed
-- **1M+** statistical analyses performed  
-- **99.9%** uptime reliability
-- **<100ms** average API response time
-- **150+ countries** served globally
-
 ## 🤖 About the AI
 
 This A/B Test Designer Robot leverages advanced statistical methods and machine learning to:
@@ -436,8 +421,7 @@ This A/B Test Designer Robot leverages advanced statistical methods and machine 
 
 **🚀 Ready to optimize your conversion rates?**
 
-[**Deploy Now**](https://AB_demo.io) | [**View Demo**](https://AB_demo.io/demo) | [**Read Docs**](https://docs.AB_demo.io)
+[**Deploy Now**](https://SpadeKKK.github.io) 
 
-Made with ❤️ by the A/B Testing Community
 
 </div>
