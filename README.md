@@ -24,7 +24,7 @@ A comprehensive A/B testing platform that automatically generates experiment wor
 
 ## 🎯 Live Demo
 
-🌐 **[Try the live demo at AB_demo.io](https://SpadeKKK.github.io)**
+🌐 **[Try the live demo at SpadeKKK.github.io](https://SpadeKKK.github.io)**
 
 ## 📁 Project Structure
 
